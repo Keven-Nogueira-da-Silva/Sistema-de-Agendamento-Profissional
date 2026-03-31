@@ -1,126 +1,194 @@
-Sistema de Agendamento Profissional
+# Sistema de Agendamento Profissional
 
-Este projeto é um Sistema de Agendamento Profissional desenvolvido com Spring Boot 3.4.0 e Java 17, demonstrando a implementação de funcionalidades de segurança, auditoria e testes de nível Pleno/Sênior.
+Este projeto é um **Sistema de Agendamento Profissional** desenvolvido com **Spring Boot 3.4.0** e **Java 17**, com foco na implementação de funcionalidades de nível Pleno/Sênior, como segurança, auditoria e testes de integração realistas.
 
-Requisitos Técnicos (Stack)
+---
 
-•
-Java 17 e Maven
+## 🚀 Requisitos Técnicos (Stack)
 
-•
-Spring Security + JWT: Implementação de RBAC (Role-Based Access Control) com as roles: ADMIN, SECRETARIA e CLIENTE.
+* **Java 17 + Maven**
 
-•
-Hibernate Envers: Configuração de auditoria automática em todas as entidades principais usando @Audited.
+* **Spring Security + JWT**
+  Implementação de RBAC (Role-Based Access Control) com as roles:
 
-•
-Banco de Dados: PostgreSQL com Flyway para migrações.
+  * ADMIN
+  * SECRETARIA
+  * CLIENTE
 
-•
-Lombok: Para redução de boilerplate.
+* **Hibernate Envers**
+  Auditoria automática nas entidades utilizando `@Audited`
 
-•
-Testcontainers: Exemplo de teste de integração que utiliza um container PostgreSQL real para validar a auditoria.
+* **Banco de Dados**
+  PostgreSQL com versionamento via Flyway
 
-Entidades e Regras de Negócio
+* **Lombok**
+  Redução de código boilerplate
 
-•
-Usuario: id, nome, email, senha, role.
+* **Testcontainers**
+  Testes de integração utilizando PostgreSQL real em container
 
-•
-Agendamento: id, dataHora, clienteNome, servico, status (PENDENTE, CONCLUIDO, CANCELADO). Contém @CreatedBy e @LastModifiedBy integrados ao Spring Security.
+---
 
-•
-Auditoria: AuditorAware implementado para capturar o usuário logado no JWT e salvar nas tabelas de auditoria.
+## 📌 Entidades e Regras de Negócio
 
-Estrutura de Código
+### Usuario
 
-•
-Security: JwtService, JwtAuthenticationFilter, e SecurityConfig (estratégia Stateless).
+* id
+* nome
+* email
+* senha
+* role
 
-•
-Controllers: Endpoints para Login, Cadastro de Agendamento, e um endpoint exclusivo para o ADMIN consultar o histórico de revisões de um agendamento (usando AuditReader).
+### Agendamento
 
-•
-DTOs: Utilização de Java Records para todas as entradas e saídas da API.
+* id
+* dataHora
+* clienteNome
+* servico
+* status (PENDENTE, CONCLUIDO, CANCELADO)
 
-•
-Tratamento de Erros: GlobalExceptionHandler para lidar com exceções de segurança e validação.
+Inclui:
 
-Decisões de Arquitetura
+* `@CreatedBy`
+* `@LastModifiedBy`
+  Integrados ao Spring Security
 
-Hibernate Envers para Auditoria
+### Auditoria
 
-A escolha do Hibernate Envers para a funcionalidade de auditoria foi motivada por sua capacidade de fornecer um histórico completo e automático de todas as alterações realizadas nas entidades do sistema. Ao anotar as entidades com @Audited, o Envers cria e mantém tabelas de auditoria (_aud) para cada entidade auditada, registrando o estado da entidade em cada revisão. Isso é crucial para sistemas que exigem rastreabilidade de dados, conformidade regulatória ou a capacidade de reverter a estados anteriores. A integração com o Spring Data JPA Auditing, através do AuditorAware, permite que o sistema capture automaticamente o usuário responsável pela alteração (obtido do contexto de segurança JWT), enriquecendo os registros de auditoria com informações sobre
-quem realizou a modificação.
+* Implementação de `AuditorAware`
+* Captura automaticamente o usuário autenticado via JWT
+* Registra quem realizou cada alteração
 
-Controle de Acesso Baseado em Papéis (RBAC) com Spring Security e JWT
+---
 
-O Controle de Acesso Baseado em Papéis (RBAC), implementado com Spring Security e JWT (JSON Web Tokens), é fundamental para proteger os dados sensíveis e garantir que apenas usuários autorizados possam acessar recursos específicos. As roles ADMIN, SECRETARIA e CLIENTE definem hierarquias de permissão, onde:
+## 🧱 Estrutura de Código
 
-•
-ADMIN: Possui acesso total, incluindo a consulta do histórico de revisões de agendamentos.
+### Security
 
-•
-SECRETARIA: Pode criar e atualizar agendamentos.
+* `JwtService`
+* `JwtAuthenticationFilter`
+* `SecurityConfig` (API Stateless)
 
-•
-CLIENTE: Pode visualizar seus próprios agendamentos (não implementado neste escopo, mas facilmente extensível).
+### Controllers
 
-O uso de JWTs garante que as sessões sejam stateless, o que é ideal para APIs RESTful, pois não há necessidade de manter o estado da sessão no servidor. Cada requisição autenticada carrega o token, que é validado para verificar a identidade e as permissões do usuário. Isso não só melhora a escalabilidade da aplicação, mas também a segurança, minimizando a superfície de ataque associada a sessões baseadas em cookies.
+* Login
+* Cadastro de Agendamento
+* Consulta de auditoria (exclusivo ADMIN, usando `AuditReader`)
 
-Como Rodar o Projeto
+### DTOs
 
-1.
-Pré-requisitos:
+* Utilização de **Java Records** para entrada e saída de dados
 
-•
-Java 17
+### Tratamento de Erros
 
-•
-Maven
+* `GlobalExceptionHandler` para exceções de segurança e validação
 
-•
-Docker (para Testcontainers e PostgreSQL)
+---
 
+## 🧠 Decisões de Arquitetura
 
+### 📊 Hibernate Envers para Auditoria
 
-2.
-Configuração do Banco de Dados:
-Certifique-se de que o Docker esteja rodando. O Flyway cuidará das migrações do banco de dados ao iniciar a aplicação.
+O Hibernate Envers foi escolhido por permitir auditoria automática e completa das entidades.
 
-3.
-Executar a Aplicação:
+* Cria tabelas `_aud` automaticamente
+* Registra cada alteração com histórico completo
+* Permite rastreabilidade total dos dados
+* Integração com `AuditorAware` adiciona:
 
-Bash
+  * Quem fez a alteração (via JWT)
 
+Ideal para:
 
+* Sistemas auditáveis
+* Compliance
+* Histórico e versionamento de dados
+
+---
+
+### 🔐 RBAC com Spring Security + JWT
+
+Controle de acesso baseado em papéis:
+
+* **ADMIN**
+
+  * Acesso total
+  * Consulta auditoria
+
+* **SECRETARIA**
+
+  * Criar e atualizar agendamentos
+
+* **CLIENTE**
+
+  * Visualizar seus próprios agendamentos (extensível)
+
+#### Vantagens do JWT:
+
+* API Stateless
+* Escalabilidade
+* Segurança reforçada
+* Sem necessidade de sessão no servidor
+
+---
+
+## ▶️ Como Rodar o Projeto
+
+### 1. Pré-requisitos
+
+* Java 17
+* Maven
+* Docker
+
+---
+
+### 2. Banco de Dados
+
+Certifique-se de que o Docker está rodando.
+
+O Flyway executará automaticamente as migrações ao iniciar o projeto.
+
+---
+
+### 3. Executar a Aplicação
+
+```bash
 mvn spring-boot:run
+```
 
+---
 
+### 4. Testar Auditoria
 
+* Realize um `PUT` em um agendamento (com autenticação)
+* Verifique a tabela:
 
+```
+agendamentos_aud
+```
 
-4.
-Testar a Auditoria:
+* Confirme:
 
-•
-Faça um PUT em um agendamento (requer autenticação).
+  * Alteração registrada
+  * Usuário responsável
 
-•
-Consulte a tabela agendamentos_aud no seu banco de dados para verificar o registro da alteração e quem a fez.
+---
 
+### 5. Executar Testes
 
-
-5.
-Executar Testes de Integração:
-
-Bash
-
-
+```bash
 mvn test
+```
 
+---
 
+## 🎯 Conclusão
 
+Este projeto demonstra a construção de uma aplicação robusta, focada em:
 
+* Segurança
+* Auditoria completa
+* Boas práticas de arquitetura
+* Testes realistas
 
+Mais do que funcional, o sistema foi pensado para ser **escalável, seguro e preparado para cenários reais de produção**.
